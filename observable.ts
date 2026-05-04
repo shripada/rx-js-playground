@@ -39,9 +39,10 @@ export class Observable<T> {
     return {
       unsubscribe() {
         // Call the cleanup function if it exists when the subscription is unsubscribed. This allows for proper resource management and prevents memory leaks.
-        if (cleanup) {
-          cleanup();
-        }
+        // if (cleanup) {
+        //   cleanup();
+        // }
+        cleanup?.();
       },
     };
   }
