@@ -1,5 +1,6 @@
 // Observable is a class that represents a stream of data that can be observed and manipulated using various operators. It is a core concept in reactive programming and is used extensively in libraries like RxJS.
 export type Operator<T, U> = (source: Observable<T>) => Observable<U>;
+
 export interface Observer<T> {
   next(value: T): void; // Whenever observable emits a new value, the next method is called with that value as an argument.
   error(err: any): void; // If an error occurs during the execution of the observable, the error method is called with the error as an argument.
