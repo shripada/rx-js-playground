@@ -2,14 +2,14 @@
 export type Operator<T, U> = (source: Observable<T>) => Observable<U>;
 
 export interface Observer<T> {
-  next(value: T): void; // Whenever observable emits a new value, the next method is called with that value as an argument.
-  error(err: any): void; // If an error occurs during the execution of the observable, the error method is called with the error as an argument.
-  complete(): void; // When the observable has finished emitting all values, the complete method is called.
+  next(value?: T): void; // Whenever observable emits a new value, the next method is called with that value as an argument.
+  error?(err: any): void; // If an error occurs during the execution of the observable, the error method is called with the error as an argument.
+  complete?(): void; // When the observable has finished emitting all values, the complete method is called.
 }
 
 export type CleanupFunction = () => void; // A function that is returned by the executor and is responsible for cleaning up resources when the subscription is unsubscribed.
 
-export type Executor<T> = (observer: Observer<T>) => CleanupFunction | void; // A function that takes an observer as an argument and is responsible for emitting values, handling errors, and signaling completion. It can also return a cleanup function that will be called when the subscription is unsubscribed.
+export type Executor<T> = (observer: Observer<T>) => CleanupFunction | null; // A function that takes an observer as an argument and is responsible for emitting values, handling errors, and signaling completion. It can also return a cleanup function that will be called when the subscription is unsubscribed.
 
 export type Subscription = {
   unsubscribe(): void; // A subscription object that allows you to unsubscribe from the observable, stopping it from emitting further values.

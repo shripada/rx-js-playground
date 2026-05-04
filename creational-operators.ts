@@ -10,7 +10,8 @@ function of<T>(...values: T[]): Observable<T> {
       observer.next(value);
     }
     // we are done producing values
-    observer.complete();
+    observer.complete?.();
+    return null;
   });
   return obsverable;
 }
@@ -23,17 +24,21 @@ function from<T>(iterable: Iterable<T>): Observable<T> {
       observer.next(value);
     }
     // we are done producing values
-    observer.complete();
+    observer.complete?.();
+    return null;
   });
   return obsverable;
 }
+
 
 function range(start: number, count: number): Observable<number> {
   const observable = new Observable((observer) => {
     for (let c = 0; c < count; c++) {
       observer.next(start + c);
     }
-    observer.complete();
+    observer.complete?.();
+    return null;
+
     //implicitely conveying that there is no cleanup function needed.
   });
   return observable;
@@ -42,20 +47,28 @@ function range(start: number, count: number): Observable<number> {
 function interval(millisecs: number): Observable<number> {
   const observable = new Observable((observer) => {
     let count = 0;
-    const interval=setInterval(() => {
+    const interval = setInterval(() => {
       //convey the current value of count to observer
       observer.next(count++);
     }, millisecs);
-    // now we  are forced to either  return a proper cleanup ,or claim that 
+    // now we  are forced to either  return a proper cleanup ,or claim that
     //there is not cleanup so we can pass return null;
-    return ()=>clearInterval(interval);
+    return () => clearInterval(interval);
   });
   return observable;
 }
 
-
-
-function timer(dueTime: number): Observable<number> {
-  // TODO:
+function timer(dueTimeMillisecs: number): Observable<number> {
+  const observable = new Observable((observer) => {
+    const timeout = setTimeout(() => {
+      //convey the current value of count to observer
+      observer.next();
+    }, dueTimeMillisecs);
+    // now we  are forced to either  return a proper cleanup ,or claim that
+    //there is not cleanup so we can pass return null;
+    return () => clearTimeout(timeout);
+  });
+  return observable;
 }
+
 export { of, from, range, interval, timer };
