@@ -37,6 +37,10 @@ export type Subscription = {
   unsubscribe(): void; // A subscription object that allows you to unsubscribe from the observable, stopping it from emitting further values.
 };
 
+function fakeExecutor<T>(observer: Observer<T>) {
+  return null;
+}
+
 /**
  * The Observable class is a fundamental part of reactive programming. It allows you to create and manage streams of data that can be observed and manipulated using various operators. The constructor takes an executor function that defines how the observable will emit values, handle errors, and signal completion. The subscribe method is used to start listening to the observable, and it returns a subscription object that can be used to unsubscribe when needed.
  */
@@ -47,7 +51,7 @@ export class Observable<T> {
    * Constructor of the Observable class. It takes an executor function as an argument, which is responsible for defining how the observable will emit values, handle errors, and signal completion. The executor function is called when the subscribe method is invoked.
    * @param executor The executor function that defines how the observable will emit values, handle errors, and signal completion.
    */
-  constructor(executor: Executor<T>) {
+  constructor(executor: Executor<T> = fakeExecutor) {
     this.executor = executor;
   }
   /**

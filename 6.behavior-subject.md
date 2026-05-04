@@ -1,0 +1,26 @@
+## Remembering most recent value produced
+
+Subject has a drawback where it does not remember most recent value it produced. In some cases it is handy to remember the previous value emitted, so that a freshly subscribed observer can receive that value immediately after it subscribes. For example, we might want to keep track of most recent data received from server, and any observer might be interested in getting the most recent value immediately rather than not getting any value.
+
+BehaviorSubject fixes this problem, by remembering most recent value emitted.
+
+## Typical Implementation
+
+```typescript
+export class BehaviorSubject<T> extends Subject<T> {
+  mostRecentValue: T | null = null;
+
+  override subscribe(observer: Observer<T>): Subscription {
+    if (this.mostRecentValue) {
+      observer.next(this.mostRecentValue);
+    }
+
+    return super.subscribe(observer);
+  }
+
+  override next(value: T) {
+    this.mostRecentValue = value;
+    super.next(value);
+  }
+}
+```

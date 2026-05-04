@@ -1,0 +1,37 @@
+## Multicasting
+
+Observables are unicast by design. Each observer gets his own copy of data always. And more over the data is generated only when there is an active subscription. Data generation happens via the executor function that we pass to the constructor of the Observable.
+
+But in some scenarios, we do need mechanisms where we should be able to multicast. We can achieve that by subclassing the Observable, and override the subscribe method, to maintain the list of active observers.
+
+## A typical implementation
+
+Interestingly, a Subject is an Observable and also an Observer. This might sound strange. But remember, Subject does not take an executor function as its argument, and in fact, even if you pass one, it will be ignored. Then the question arises. How does the Subject generate its values. This is the exact reason why a Subject implements Observer interface. The `next` method serves the purpose. Now anyone can call this method with a value, and all observers will receive this value.
+
+A typical implementation of Subject is
+
+```typescript
+export class Subject<T> extends Observable<T> implements Observer<T> {
+  private observers: Observer<T>[] = [];
+
+  override subscribe(observer: Observer<T>): Subscription {
+    if (!this.observers.find((value) => value === observer)) {
+      this.observers.push(observer);
+    }
+
+    return {
+      unsubscribe: () => {
+        this.observers = this.observers.filter((ob) => ob !== observer);
+      },
+    };
+  }
+
+  // Observer part
+  next(value: T) {
+    // broadcast this value to all your observers
+    this.observers.forEach((ob) => ob.next(value));
+  }
+}
+```
+
+Another interesting thing you can do is you can add a subject as an observer to a plain observable. There by turn the unicasting observable into a multicasting facility.
