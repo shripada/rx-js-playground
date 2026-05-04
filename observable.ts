@@ -43,6 +43,7 @@ export class Observable<T> {
         //   cleanup();
         // }
         cleanup?.();
+        cleanup=null;
       },
     };
   }
