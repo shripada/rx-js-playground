@@ -2,14 +2,36 @@
 export type Operator<T, U> = (source: Observable<T>) => Observable<U>;
 
 export interface Observer<T> {
-  next(value: T): void; // Whenever observable emits a new value, the next method is called with that value as an argument.
-  error(err: any): void; // If an error occurs during the execution of the observable, the error method is called with the error as an argument.
-  complete(): void; // When the observable has finished emitting all values, the complete method is called.
+  next(value?: T): void; // Whenever observable emits a new value, the next method is called with that value as an argument.
+  error?(err: any): void; // If an error occurs during the execution of the observable, the error method is called with the error as an argument.
+  complete?(): void; // When the observable has finished emitting all values, the complete method is called.
 }
 
 export type CleanupFunction = () => void; // A function that is returned by the executor and is responsible for cleaning up resources when the subscription is unsubscribed.
 
-export type Executor<T> = (observer: Observer<T>) => CleanupFunction | void; // A function that takes an observer as an argument and is responsible for emitting values, handling errors, and signaling completion. It can also return a cleanup function that will be called when the subscription is unsubscribed.
+export type Executor<T> = (observer: Observer<T>) => CleanupFunction | null; // A function that takes an observer as an argument and is responsible for emitting values, handling errors, and signaling completion. It can also return a cleanup function that will be called when the subscription is unsubscribed.
+
+type OperatorChain<
+  Input,
+  Operators extends readonly Operator<any, any>[],
+> = Operators extends readonly []
+  ? readonly []
+  : Operators extends readonly [Operator<Input, infer Output>, ...infer Rest]
+    ? Rest extends readonly Operator<any, any>[]
+      ? readonly [Operator<Input, Output>, ...OperatorChain<Output, Rest>]
+      : readonly [Operator<Input, Output>]
+    : never;
+
+type PipeResult<
+  Input,
+  Operators extends readonly Operator<any, any>[],
+> = Operators extends readonly []
+  ? Observable<Input>
+  : Operators extends readonly [Operator<Input, infer Output>, ...infer Rest]
+    ? Rest extends readonly Operator<any, any>[]
+      ? PipeResult<Output, Rest>
+      : Observable<Output>
+    : never;
 
 export type Subscription = {
   unsubscribe(): void; // A subscription object that allows you to unsubscribe from the observable, stopping it from emitting further values.
@@ -34,27 +56,25 @@ export class Observable<T> {
    * @returns A subscription object that can be used to unsubscribe from the observable.
    */
   subscribe(observer: Observer<T>): Subscription {
-    const cleanup = this.executor(observer);
+    let cleanup = this.executor(observer);
 
     return {
       unsubscribe() {
         // Call the cleanup function if it exists when the subscription is unsubscribed. This allows for proper resource management and prevents memory leaks.
-        if (cleanup) {
-          cleanup();
-        }
+        // if (cleanup) {
+        //   cleanup();
+        // }
+        cleanup?.();
+        cleanup = null;
       },
     };
   }
 
-  pipe(...operators: Operator<unknown, unknown>[]): Observable<unknown> {
-    return operators.reduce(
-      (
-        prevObservable: Observable<unknown>,
-        currentOp: Operator<unknown, unknown>,
-      ) => {
-        return currentOp(prevObservable);
-      },
-      this,
-    );
+  pipe<Operators extends readonly Operator<any, any>[]>(
+    ...operators: Operators & OperatorChain<T, Operators>
+  ): PipeResult<T, Operators> {
+    return operators.reduce<Observable<any>>((prevObservable, currentOp) => {
+      return currentOp(prevObservable);
+    }, this) as PipeResult<T, Operators>;
   }
 }
