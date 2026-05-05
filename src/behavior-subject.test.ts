@@ -2,7 +2,7 @@ import { BehaviorSubject } from './behavior-subject.js';
 import { of } from './creational-operators.js';
 import type { Observer } from './observable.js';
 
-const aSubject$ = new BehaviorSubject<number>();
+const aSubject$ = new BehaviorSubject<number>(0);
 aSubject$.next(10); // 0 observers
 
 const obs1: Observer<number> = {

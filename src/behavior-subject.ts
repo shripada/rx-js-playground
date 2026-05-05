@@ -3,18 +3,23 @@ import type { Observer, Subscription } from './observable.js';
 import { Subject } from './subject.js';
 
 export class BehaviorSubject<T> extends Subject<T> {
-  mostRecentValue: T | null = null;
+  currentValue: T;
 
   override subscribe(observer: Observer<T>): Subscription {
-    if (this.mostRecentValue) {
-      observer.next(this.mostRecentValue);
+    if (this.currentValue) {
+      observer.next(this.currentValue);
     }
 
     return super.subscribe(observer);
   }
 
   override next(value: T) {
-    this.mostRecentValue = value;
+    this.currentValue = value;
     super.next(value);
+  }
+
+  constructor(initialValue: T) {
+    super();
+    this.currentValue = initialValue;
   }
 }

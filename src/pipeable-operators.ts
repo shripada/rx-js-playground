@@ -1,5 +1,6 @@
-import { of } from './creational-operators.js';
-import { Observable } from './observable.js';
+// import { of } from './creational-operators.js';
+// import { Observable } from './observable.js';
+import { of, Observable } from 'rxjs';
 
 // An operator is a function that takes an observable and returns an observable
 export type Operator<T, U> = (input$: Observable<T>) => Observable<U>;
@@ -13,7 +14,7 @@ const double: Operator<number, number> = (
   // must read values of input and double them, and feed them to the observer of output observable.
   // you get a reference to it in the executor function
 
-  const output$ = new Observable((observer) => {
+  const output$ = new Observable<number>((observer) => {
     const inputSubscription = input$.subscribe({
       next(value) {
         if (value !== undefined) {
